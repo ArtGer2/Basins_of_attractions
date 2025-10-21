@@ -25,7 +25,7 @@ void runBasinsPerformanceTests() {
 
 	resultsFile << "Parameter,CT,Resolution,Library,ExecutionTime_ms" << std::endl;
 
-	std::vector<int> resolutions = { 1000 };  // Resolution tests
+	std::vector<int> resolutions = { 100,200,400,600,800,1000 };  // Resolution tests
 	std::vector<int> modelingTimes = { 500, 1000, 1500, 2000, 2500, 3000 };  // Simulation time tests
 
 	double params[5]{ 0.5, 0.1665, 1.4,  15.552, 2 };
