@@ -44,7 +44,7 @@ namespace basinsGPU {
 		int amountOfClusters = 0;               // Number of clusters
 		int amountOfNegativeClusters = 0;
 		int* amountOfNeighbors = new int[1];     // Helper variable - how many neighbors were found for a point
-		amountOfNeighbors = 0;
+		*amountOfNeighbors = 0;
 		int* neighbors = new int[amountOfData]; // Helper variable - indices of found neighbors
 		int* d_amountOfNeighbors;               // Helper variable - how many neighbors were found for a point (device/GPU)
 		int* d_neighbors;                       // Helper variable - indices of found neighbors (device/GPU)

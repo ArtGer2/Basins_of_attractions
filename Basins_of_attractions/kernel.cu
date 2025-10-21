@@ -96,32 +96,32 @@ int main()
 	double init[3]{ 0, 0, 0, };
 	double ranges[4]{ -6, 6, -6, 6 };
 	int indicesOfMutVars[2]{ 0, 1 };
-	//runBasinsPerformanceTests();
-	{
-	 std::cout << "Start basins" << std::endl;
-	 auto start = std::chrono::high_resolution_clock::now();
+	runBasinsPerformanceTests();
+	// {
+	//  std::cout << "Start basins" << std::endl;
+	//  auto start = std::chrono::high_resolution_clock::now();
 
-	 Basins::basinsOfAttraction_2(
-	 	500,       // CT
-	 	300,       // Resolution
-	 	h,         // time step
-	 	sizeof(init) / sizeof(double),   // amount of init conditions
-	 	init,         // init conditions
-	 	ranges,			// parameters range
-	 	indicesOfMutVars, // indices of butual variables
-		1,          // Index of the equation to use for plotting the diagram
-		100000000,  // Maximum value (by absolute value); above this the system is considered "diverged"
-		1000,       // Time that will be simulated before computing the diagram
-		params,     // Parameters
-		sizeof(params) / sizeof(double),  // Number of parameters
-		1,          // Multiplier that reduces time and computation load (only every 'preScaller' point will be computed)
-		0.05,       // Epsilon for the DBSCAN algorithm
-	 	std::string(BASINS_OUTPUT_PATH) + "/bas.csv"
-	 );
-	 auto end = std::chrono::high_resolution_clock::now();
-	 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-	 std::cout << "Time taken: " << duration << " milliseconds" << std::endl;
-	 }
+	//  Basins::basinsOfAttraction_2(
+	//  	500,       // CT
+	//  	300,       // Resolution
+	//  	h,         // time step
+	//  	sizeof(init) / sizeof(double),   // amount of init conditions
+	//  	init,         // init conditions
+	//  	ranges,			// parameters range
+	//  	indicesOfMutVars, // indices of butual variables
+	// 	1,          // Index of the equation to use for plotting the diagram
+	// 	100000000,  // Maximum value (by absolute value); above this the system is considered "diverged"
+	// 	1000,       // Time that will be simulated before computing the diagram
+	// 	params,     // Parameters
+	// 	sizeof(params) / sizeof(double),  // Number of parameters
+	// 	1,          // Multiplier that reduces time and computation load (only every 'preScaller' point will be computed)
+	// 	0.05,       // Epsilon for the DBSCAN algorithm
+	//  	std::string(BASINS_OUTPUT_PATH) + "/bas.csv"
+	//  );
+	//  auto end = std::chrono::high_resolution_clock::now();
+	//  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	//  std::cout << "Time taken: " << duration << " milliseconds" << std::endl;
+	//  }
 
 	//runPerformanceTests();
 #endif
