@@ -28,7 +28,7 @@ void runBasinsPerformanceTests() {
 	std::vector<int> resolutions = { 1000 };  // Resolution tests
 	std::vector<int> modelingTimes = { 500, 1000, 1500, 2000, 2500, 3000 };  // Simulation time tests
 
-	double params[5]{ 0.5, 0.1, 1.4,  15.552, 2 };
+	double params[5]{ 0.5, 0.1665, 1.4,  15.552, 2 };
 	double init[3]{ 0, 0, 0, };
 	double ranges[4]{ -6, 6, -6, 6 };
 	int indicesOfMutVars[2]{ 0, 1 };
@@ -159,7 +159,7 @@ int main()
 #endif
 
 
-	std::cout << "Общее время выполнения: " << (std::clock() - startTime) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
+	std::cout << "Time taken: " << (std::clock() - startTime) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << std::endl;
 
 	return 0;
 }

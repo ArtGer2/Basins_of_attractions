@@ -535,12 +535,10 @@ namespace basinsGPU {
 		printf("Amount of iterations %zu: \n", amountOfIteration);
 #endif
 
-		int stringCounter = 0; // Вспомогательная переменная для корректной записи матрицы в файл
+		int stringCounter = 0; 
 
-		// --- Точность чисел с плавающей запятой ---
 		outFileStream << std::setprecision(15);
 
-		// --- Выводим в самое начало файла исследуемые диапазон ---
 		if (outFileStream.is_open())
 		{
 			outFileStream << ranges[0] << " " << ranges[1] << "\n";
