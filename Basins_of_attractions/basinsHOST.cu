@@ -1,22 +1,23 @@
 #include "basinsHOST.h"
 #include "basinsCUDA.cuh"
+#include "systems.cuh"
 
 namespace Basins {
     void basinsOfAttraction_2(
-        const double tMax,
+        const numb tMax,
         const int nPts,
-        const double h,
+        const numb h,
         const int amountOfInitialConditions,
-        const double* initialConditions,
-        const double* ranges,
+        const numb* initialConditions,
+        const numb* ranges,
         const int* indicesOfMutVars,
         const int writableVar,
-        const double maxValue,
-        const double transientTime,
-        const double* values,
+        const numb maxValue,
+        const numb transientTime,
+        const numb* values,
         const int amountOfValues,
         const int preScaller,
-        const double eps,
+        const numb eps,
         std::string OUT_FILE_PATH)
     {
         // Delegate to the CUDA implementation

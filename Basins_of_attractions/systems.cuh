@@ -6,16 +6,18 @@
 #include "device_launch_parameters.h"
 #include <math.h>
 
+typedef float numb;
+
 
 #define USE_SYSTEM_FOR_BASINS
 
 #ifdef USE_CHAMELEON_MODEL
-__device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
-    double h1 = a[0] * h;
-    double h2 = (1 - a[0]) * h;
+__device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
+    numb h1 = a[0] * h;
+    numb h2 = (1 - a[0]) * h;
     X[0] = __fma_rn(h1, -a[6] * X[1], X[0]);
     X[1] = __fma_rn(h1, a[6] * X[0] + a[1] * X[2], X[1]);
-    double cos_term = cos(a[5] * X[1]);
+    numb cos_term = cos(a[5] * X[1]);
     X[2] = __fma_rn(h1, a[2] - a[3] * X[2] + a[4] * cos_term, X[2]);
 
     X[2] = __fma_rn(h2, (a[2] + a[4] * cos_term), X[2]) / (1 + a[3] * h2);
@@ -28,15 +30,15 @@ __device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
 #endif
 
 #ifdef USE_ROSSLER_MODEL
-__device__ inline void calcDiscreteModel(double* x, const double* a, double h) {
-    double h1 = 0.5 * h + a[0];
-    double h2 = 0.5 * h - a[0];
+__device__ inline void calcDiscreteModel(numb* x, const numb* a, numb h) {
+    numb h1 = 0.5 * h + a[0];
+    numb h2 = 0.5 * h - a[0];
 
     x[0] = h1 * (-x[1] - x[2]) + x[0];
     x[1] = h1 * (x[0] + a[1] * x[1]) + x[1];
     x[2] = h1 * (a[2] + x[2] * (x[0] - a[3])) + x[2];
 
-    double temp = -h2 * (x[0] - a[3]) + 1.0;
+    numb temp = -h2 * (x[0] - a[3]) + 1.0;
     x[2] = (h2 * a[2] + x[2]) / temp;
 
     temp = -h2 * a[1] + 1.0;
@@ -53,7 +55,7 @@ __device__ inline void calcDiscreteModel(double* x, const double* a, double h) {
 
 
 #ifdef USE_SYSTEM_FOR_BASINS
-__device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
+__device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
     float h1 = h * a[0];
     float h2 = h * (1 - a[0]);
 
@@ -71,7 +73,7 @@ __device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
 #endif
 
 #ifdef USE_SYSTEM_FOR_BASINS_2
-__device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
+__device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
     float h1 = h * a[0];
     float h2 = h * (1 - a[0]);
 
@@ -89,7 +91,7 @@ __device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
 #endif
 
 #ifdef USE_CUSTOM_SYSTEM
-__device__ inline void calcDiscreteModel(double* X, const double* a, double h) {
+__device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
     //
     // PLACE YOUR CODE HERE
     //

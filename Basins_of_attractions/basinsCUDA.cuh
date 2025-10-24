@@ -2,97 +2,98 @@
 #include <cuda_runtime.h>
 #include "device_launch_parameters.h"
 #include "cudaMacros.cuh"
+#include "systems.cuh"
 
 #include <iomanip>
 #include <string>
 
 namespace basinsGPU {
     __host__ void basinsOfAttraction_2(
-        const double	tMax,				
+        const numb	tMax,				
         const int		nPts,								
-        const double	h,								
+        const numb	h,								
         const int		amountOfInitialConditions,			
-        const double* initialConditions,					
-        const double* ranges,								
+        const numb* initialConditions,					
+        const numb* ranges,								
         const int* indicesOfMutVars,					
         const int		writableVar,						
-        const double	maxValue,							
-        const double	transientTime,						
-        const double* values,								
+        const numb	maxValue,							
+        const numb	transientTime,						
+        const numb* values,								
         const int		amountOfValues,						
         const int		preScaller,							
-        const double	eps,
+        const numb	eps,
         std::string		OUT_FILE_PATH);	                 
 
     __global__ void calculateDiscreteModelICCUDA(
-        double* ranges,
+        numb* ranges,
         int* indicesOfMutVars,
-        double* initialConditions,
-        const double* values,
-        double* data,
+        numb* initialConditions,
+        const numb* values,
+        numb* data,
         int* maxValueCheckerArray);
 
     __global__ void calculateTransTimeCUDA(
-        double* ranges,
+        numb* ranges,
         int* indicesOfMutVars,
-        double* initialConditions,
-        const double* values,
-        double* semi_result,
+        numb* initialConditions,
+        const numb* values,
+        numb* semi_result,
         int* maxValueCheckerArray);
 
     __global__ void calculateTransferResultCUDA(
-        double* semi_result);
+        numb* semi_result);
 
     __global__ void calculateDiscreteModelCUDA(
-        double* ranges,
+        numb* ranges,
         int* indicesOfMutVars,
-        double* initialConditions,
-        const double* values,
-        double* data,
-        double* semi_result,
+        numb* initialConditions,
+        const numb* values,
+        numb* data,
+        numb* semi_result,
         int* maxValueCheckerArray);
 
 
-    __global__ void avgPeakFinderCUDA(double* data, const int sizeOfBlock, const int amountOfBlocks,
-        double* outAvgPeaks, double* AvgTimeOfPeaks, double* outPeaks, double* timeOfPeaks, int* systemCheker, double h = 0);
+    __global__ void avgPeakFinderCUDA(numb* data, const int sizeOfBlock, const int amountOfBlocks,
+        numb* outAvgPeaks, numb* AvgTimeOfPeaks, numb* outPeaks, numb* timeOfPeaks, int* systemCheker, numb h = 0);
 
-    __device__ __host__ double getValueByIdx(
+    __device__ __host__ numb getValueByIdx(
         const int idx,
         const int nPts,
-        const double startRange,
-        const double finishRange,
+        const numb startRange,
+        const numb finishRange,
         const int valueNumber);
 
 
     __device__ int loopCalculateDiscreteModel_int(
-        double* x, const double* values,
-        const double h, const int amountOfIterations, const int amountOfX, const int preScaller = 0,
-        const int writableVar = 0, const double maxValue = 0,
-        double* data = nullptr, const int startDataIndex = 0,
+        numb* x, const numb* values,
+        const numb h, const int amountOfIterations, const int amountOfX, const int preScaller = 0,
+        const int writableVar = 0, const numb maxValue = 0,
+        numb* data = nullptr, const int startDataIndex = 0,
         const int writeStep = 1);
 
     // Function for finding peaks in time series data
     __device__ int peakFinder(
-        double* data,
+        numb* data,
         const int startDataIndex,
         const int amountOfPoints,
-        double* outPeaks,
-        double* timeOfPeaks,
-        double h = 0);
+        numb* outPeaks,
+        numb* timeOfPeaks,
+        numb h = 0);
 
 
-    __global__ void CUDA_dbscan_kernel(double* data, double* intervals, int* labels,
-        const int amountOfData, const double eps, int amountOfClusters,
+    __global__ void CUDA_dbscan_kernel(numb* data, numb* intervals, int* labels,
+        const int amountOfData, const numb eps, int amountOfClusters,
         int* amountOfNeighbors, int* neighbors, int idxCurPoint, int* helpfulArray);
 
 
 
-    __global__ void CUDA_dbscan_search_clear_points_kernel(double* data, double* intervals, int* helpfulArray, int* labels,
+    __global__ void CUDA_dbscan_search_clear_points_kernel(numb* data, numb* intervals, int* helpfulArray, int* labels,
         const int amountOfData, int* res);
 
 
 
-    __global__ void CUDA_dbscan_search_fixed_points_kernel(double* data, double* intervals, int* helpfulArray, int* labels,
+    __global__ void CUDA_dbscan_search_fixed_points_kernel(numb* data, numb* intervals, int* helpfulArray, int* labels,
         const int amountOfData, int* res);
 
 

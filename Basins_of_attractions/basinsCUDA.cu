@@ -10,18 +10,18 @@
 
 
 namespace basinsGPU {
-	__constant__ double d_tMax;
+	__constant__ numb d_tMax;
 	__constant__ int d_nPts;
-	__constant__ double d_h;
+	__constant__ numb d_h;
 	__constant__ int d_amountOfInitialConditions;
 
 	__constant__ int d_writableVar;
-	__constant__ double d_maxValue;
-	__constant__ double d_transientTime;
+	__constant__ numb d_maxValue;
+	__constant__ numb d_transientTime;
 
 	__constant__ int d_amountOfValues;
 	__constant__ int d_preScaller;
-	__constant__ double d_eps;
+	__constant__ numb d_eps;
 
 
 	__constant__ int d_sizeOfBlock;
@@ -38,7 +38,7 @@ namespace basinsGPU {
 	__constant__ int d_amountOfCalculatedPoints;
 
 
-	void CUDA_dbscan(double* data, double* intervals, int* labels, int* helpfulArray, const int amountOfData, const double eps)
+	void CUDA_dbscan(numb* data, numb* intervals, int* labels, int* helpfulArray, const int amountOfData, const numb eps)
 	{
 		int resultClusters = 0;
 		int amountOfClusters = 0;               // Number of clusters
@@ -182,30 +182,30 @@ namespace basinsGPU {
 		cudaFree(d_neighbors);
 
 	}
-	__device__ void calculateDiscreteModel(double* X, const double* a, const double h)
+	__device__ void calculateDiscreteModel(numb* X, const numb* a, const numb h)
 	{
 		CALC_DISCRETE_MODEL(X, a, h);
 	}
 
-	__device__ __host__ double getValueByIdx(const int idx, const int nPts,
-		const double startRange, const double finishRange, const int valueNumber)
+	__device__ __host__ numb getValueByIdx(const int idx, const int nPts,
+		const numb startRange, const numb finishRange, const int valueNumber)
 	{
-		return startRange + (((int)((int)idx / pow((double)nPts, (double)valueNumber)) % nPts) * ((double)(finishRange - startRange) / (double)(nPts - 1)));
+		return startRange + (((int)((int)idx / pow((numb)nPts, (numb)valueNumber)) % nPts) * ((numb)(finishRange - startRange) / (numb)(nPts - 1)));
 	}
 
 	__global__ void calculateDiscreteModelICCUDA(
-		double* ranges,
+		numb* ranges,
 		int* indicesOfMutVars,
-		double* initialConditions,
-		const double* values,
-		double* data,
+		numb* initialConditions,
+		const numb* values,
+		numb* data,
 		int* maxValueCheckerArray)
 	{
 
-		extern __shared__ double s[];
+		extern __shared__ numb s[];
 
-		double* localX = s + (threadIdx.x * d_amountOfInitialConditions);
-		double* localValues = s + (blockDim.x * d_amountOfInitialConditions) + (threadIdx.x * d_amountOfValues);
+		numb* localX = s + (threadIdx.x * d_amountOfInitialConditions);
+		numb* localValues = s + (blockDim.x * d_amountOfInitialConditions) + (threadIdx.x * d_amountOfValues);
 
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;
 		if (idx >= d_nPtsLimiter)	return;
@@ -236,15 +236,15 @@ namespace basinsGPU {
 	}
 
 	__global__ void calculateTransTimeCUDA(
-		double* ranges,
+		numb* ranges,
 		int* indicesOfMutVars,
-		double* initialConditions,
-		const double* values,
-		double* semi_result,
+		numb* initialConditions,
+		const numb* values,
+		numb* semi_result,
 		int* maxValueCheckerArray)
 	{
-		double localX[SIZE_X];
-		double localValues[SIZE_A];
+		numb localX[SIZE_X];
+		numb localValues[SIZE_A];
 
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;
 		if (idx >= d_nPtsLimiter) return;
@@ -258,12 +258,12 @@ namespace basinsGPU {
 		for (int i = 0; i < d_dimension; ++i) {
 			int valueIdx = d_amountOfCalculatedPoints + idx;
 			int nPts = d_nPts;
-			double startRange = ranges[i * 2];
-			double finishRange = ranges[i * 2 + 1];
+			numb startRange = ranges[i * 2];
+			numb finishRange = ranges[i * 2 + 1];
 			int valueNumber = i;
 			localX[indicesOfMutVars[i]] = startRange +
-				(((int)((int)valueIdx / pow((double)nPts, (double)valueNumber)) % nPts) *
-					((double)(finishRange - startRange) / (double)(nPts - 1)));
+				(((int)((int)valueIdx / pow((numb)nPts, (numb)valueNumber)) % nPts) *
+					((numb)(finishRange - startRange) / (numb)(nPts - 1)));
 		}
 
 		{
@@ -285,16 +285,16 @@ namespace basinsGPU {
 	}
 
 	__global__ void calculateDiscreteModelCUDA(
-		double* ranges,
+		numb* ranges,
 		int* indicesOfMutVars,
-		double* initialConditions,
-		const double* values,
-		double* data,
-		double* semi_result,
+		numb* initialConditions,
+		const numb* values,
+		numb* data,
+		numb* semi_result,
 		int* maxValueCheckerArray)
 	{
-		double localX[SIZE_X];
-		double localValues[SIZE_A];
+		numb localX[SIZE_X];
+		numb localValues[SIZE_A];
 
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;
 		if (idx >= d_nPtsLimiter)	return;
@@ -321,19 +321,19 @@ namespace basinsGPU {
 
 	//__device__ __host__ int loopCalculateDiscreteModel_int(
 	__device__ int loopCalculateDiscreteModel_int(
-		double* x,
-		const double* values,
-		const double h,
+		numb* x,
+		const numb* values,
+		const numb h,
 		const int amountOfIterations,
 		const int amountOfX,
 		const int preScaller,
 		int writableVar,
-		const double maxValue,
-		double* data,
+		const numb maxValue,
+		numb* data,
 		const int startDataIndex,
 		const int writeStep)
 	{
-		double* xPrev = new double[amountOfX];
+		numb* xPrev = new numb[amountOfX];
 
 		for (int i = 0; i < amountOfIterations; ++i)
 		{
@@ -366,7 +366,7 @@ namespace basinsGPU {
 				}
 		}
 
-		double tempResult = 0;
+		numb tempResult = 0;
 
 		for (int j = 0; j < amountOfX; ++j)
 		{
@@ -384,8 +384,8 @@ namespace basinsGPU {
 		return 1;
 	}
 
-	__device__ __host__ int peakFinder(double* data, const int startDataIndex,
-		const int amountOfPoints, double* outPeaks, double* timeOfPeaks, double h)
+	__device__ __host__ int peakFinder(numb* data, const int startDataIndex,
+		const int amountOfPoints, numb* outPeaks, numb* timeOfPeaks, numb h)
 	{
 		int amountOfPeaks = 0;
 
@@ -405,7 +405,7 @@ namespace basinsGPU {
 						if (outPeaks != nullptr)
 							outPeaks[startDataIndex + amountOfPeaks] = data[j];
 						if (timeOfPeaks != nullptr)
-							timeOfPeaks[startDataIndex + amountOfPeaks] = trunc(((double)j + (double)i) / (double)2);	
+							timeOfPeaks[startDataIndex + amountOfPeaks] = trunc(((numb)j + (numb)i) / (numb)2);	
 						++amountOfPeaks;
 						i = j + 1;
 						break;
@@ -419,7 +419,7 @@ namespace basinsGPU {
 				if (outPeaks != nullptr)
 					outPeaks[startDataIndex + i] = outPeaks[startDataIndex + i + 1];
 				if (timeOfPeaks != nullptr)
-					timeOfPeaks[startDataIndex + i] = (double)(timeOfPeaks[startDataIndex + i + 1] - timeOfPeaks[startDataIndex + i]) * h;
+					timeOfPeaks[startDataIndex + i] = (numb)(timeOfPeaks[startDataIndex + i + 1] - timeOfPeaks[startDataIndex + i]) * h;
 			}
 			amountOfPeaks = amountOfPeaks - 1;
 		}
@@ -432,20 +432,20 @@ namespace basinsGPU {
 	}
 
 	__host__ void basinsOfAttraction_2(
-		const double  tMax,                            // Time for modeling the system
+		const numb  tMax,                            // Time for modeling the system
 		const int     nPts,                            // Resolution of the diagram
-		const double   h,                              // Integration step
+		const numb   h,                              // Integration step
 		const int     amountOfInitialConditions,       // Number of initial conditions (equations in the system)
-		const double* initialConditions,               // Array with initial conditions
-		const double* ranges,                          // Ranges for varying parameters
+		const numb* initialConditions,               // Array with initial conditions
+		const numb* ranges,                          // Ranges for varying parameters
 		const int* indicesOfMutVars,                  // Indices of mutable parameters
 		const int     writableVar,                     // Index of the equation for which the diagram will be constructed
-		const double  maxValue,                        // Maximum value (in absolute terms) above which the system is considered "diverged"
-		const double  transientTime,                   // Time to be modeled before calculating the diagram
-		const double* values,                          // Parameters
+		const numb  maxValue,                        // Maximum value (in absolute terms) above which the system is considered "diverged"
+		const numb  transientTime,                   // Time to be modeled before calculating the diagram
+		const numb* values,                          // Parameters
 		const int     amountOfValues,                  // Number of parameters
 		const int     preScaller,                      // Multiplier that reduces time and computational load (only every 'preScaller' point will be calculated)
-		const double  eps,                             // Epsilon for the DBSCAN algorithm
+		const numb  eps,                             // Epsilon for the DBSCAN algorithm
 		std::string   OUT_FILE_PATH)                   // Output file path
 	{
 		int amountOfPointsInBlock = tMax / h / preScaller;
@@ -461,51 +461,51 @@ namespace basinsGPU {
 
 		// --- Calculate the number of systems we can model in parallel at one moment in time ---
 		// TODO: Implement memory requirement calculation
-		size_t nPtsLimiter = freeMemory / (sizeof(double) * amountOfPointsInBlock * 3);
+		size_t nPtsLimiter = freeMemory / (sizeof(numb) * amountOfPointsInBlock * 3);
 
 		nPtsLimiter = nPtsLimiter > (nPts * nPts) ? (nPts * nPts) : nPtsLimiter; // If we can calculate more systems than required, limit it to the maximum (nPts)
 
 		size_t originalNPtsLimiter = nPtsLimiter;      // Store the original value of nPts for further calculations (getValueByIdx)
 
-		double* d_data;                              // Pointer to the array in GPU memory for storing the trajectory of the system
-		double* d_ranges;                            // Pointer to the array with the range of the variable changes
+		numb* d_data;                              // Pointer to the array in GPU memory for storing the trajectory of the system
+		numb* d_ranges;                            // Pointer to the array with the range of the variable changes
 		int* d_indicesOfMutVars;                     // Pointer to the array with indices of mutable variables in the values array
-		double* d_initialConditions;                  // Pointer to the array with initial conditions
-		double* d_values;                             // Pointer to the array with parameters
+		numb* d_initialConditions;                  // Pointer to the array with initial conditions
+		numb* d_values;                             // Pointer to the array with parameters
 
 		int* d_amountOfPeaks;                         // Pointer to the GPU array with the number of peaks in each system
-		double* d_intervals;                          // Pointer to the GPU array with the peak intervals
+		numb* d_intervals;                          // Pointer to the GPU array with the peak intervals
 		int* d_dbscanResult;                          // Pointer to the GPU array for the resulting matrix (diagram)
 		int* d_helpfulArray;                          // Pointer to the GPU array for auxiliary data
 
-		double* d_avgPeaks;
-		double* d_avgIntervals;
+		numb* d_avgPeaks;
+		numb* d_avgIntervals;
 
 
-		gpuErrorCheck(cudaMalloc((void**)&d_data, nPtsLimiter * amountOfPointsInBlock * sizeof(double)));
-		gpuErrorCheck(cudaMalloc((void**)&d_ranges, 4 * sizeof(double)));
+		gpuErrorCheck(cudaMalloc((void**)&d_data, nPtsLimiter * amountOfPointsInBlock * sizeof(numb)));
+		gpuErrorCheck(cudaMalloc((void**)&d_ranges, 4 * sizeof(numb)));
 		gpuErrorCheck(cudaMalloc((void**)&d_indicesOfMutVars, 2 * sizeof(int)));
-		gpuErrorCheck(cudaMalloc((void**)&d_initialConditions, amountOfInitialConditions * sizeof(double)));
-		gpuErrorCheck(cudaMalloc((void**)&d_values, amountOfValues * sizeof(double)));
+		gpuErrorCheck(cudaMalloc((void**)&d_initialConditions, amountOfInitialConditions * sizeof(numb)));
+		gpuErrorCheck(cudaMalloc((void**)&d_values, amountOfValues * sizeof(numb)));
 
 		gpuErrorCheck(cudaMalloc((void**)&d_amountOfPeaks, nPtsLimiter * sizeof(int)));
-		gpuErrorCheck(cudaMalloc((void**)&d_intervals, nPtsLimiter * amountOfPointsInBlock * sizeof(double)));
+		gpuErrorCheck(cudaMalloc((void**)&d_intervals, nPtsLimiter * amountOfPointsInBlock * sizeof(numb)));
 		gpuErrorCheck(cudaMalloc((void**)&d_dbscanResult, nPts * nPts * sizeof(int)));
 		gpuErrorCheck(cudaMalloc((void**)&d_helpfulArray, nPts * nPts * sizeof(int)));
 
 
-		gpuErrorCheck(cudaMalloc((void**)&d_avgPeaks, nPts * nPts * sizeof(double)));
-		gpuErrorCheck(cudaMalloc((void**)&d_avgIntervals, nPts * nPts * sizeof(double)));
+		gpuErrorCheck(cudaMalloc((void**)&d_avgPeaks, nPts * nPts * sizeof(numb)));
+		gpuErrorCheck(cudaMalloc((void**)&d_avgIntervals, nPts * nPts * sizeof(numb)));
 
-		gpuErrorCheck(cudaMemcpy(d_ranges, ranges, 4 * sizeof(double), cudaMemcpyKind::cudaMemcpyHostToDevice));
+		gpuErrorCheck(cudaMemcpy(d_ranges, ranges, 4 * sizeof(numb), cudaMemcpyKind::cudaMemcpyHostToDevice));
 		gpuErrorCheck(cudaMemcpy(d_indicesOfMutVars, indicesOfMutVars, 2 * sizeof(int), cudaMemcpyKind::cudaMemcpyHostToDevice));
-		gpuErrorCheck(cudaMemcpy(d_initialConditions, initialConditions, amountOfInitialConditions * sizeof(double), cudaMemcpyKind::cudaMemcpyHostToDevice));
-		gpuErrorCheck(cudaMemcpy(d_values, values, amountOfValues * sizeof(double), cudaMemcpyKind::cudaMemcpyHostToDevice));
+		gpuErrorCheck(cudaMemcpy(d_initialConditions, initialConditions, amountOfInitialConditions * sizeof(numb), cudaMemcpyKind::cudaMemcpyHostToDevice));
+		gpuErrorCheck(cudaMemcpy(d_values, values, amountOfValues * sizeof(numb), cudaMemcpyKind::cudaMemcpyHostToDevice));
 
-		size_t amountOfIteration = (size_t)ceil((double)(nPts * nPts) / (double)nPtsLimiter);
+		size_t amountOfIteration = (size_t)ceil((numb)(nPts * nPts) / (numb)nPtsLimiter);
 
-		gpuErrorCheck(cudaMemcpyToSymbol(d_h, &h, sizeof(double)));
-		gpuErrorCheck(cudaMemcpyToSymbol(d_tMax, &tMax, sizeof(double)));
+		gpuErrorCheck(cudaMemcpyToSymbol(d_h, &h, sizeof(numb)));
+		gpuErrorCheck(cudaMemcpyToSymbol(d_tMax, &tMax, sizeof(numb)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_nPts, &nPts, sizeof(int)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_amountOfIterations, &amountOfIteration, sizeof(int)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_amountOfInitialConditions, &amountOfInitialConditions, sizeof(int)));
@@ -514,7 +514,7 @@ namespace basinsGPU {
 		gpuErrorCheck(cudaMemcpyToSymbol(d_amountOfPointsInBlock, &amountOfPointsInBlock, sizeof(int)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_amountOfPointsForSkip, &amountOfPointsForSkip, sizeof(int)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_writableVar, &writableVar, sizeof(int)));
-		gpuErrorCheck(cudaMemcpyToSymbol(d_maxValue, &maxValue, sizeof(double)));
+		gpuErrorCheck(cudaMemcpyToSymbol(d_maxValue, &maxValue, sizeof(numb)));
 		gpuErrorCheck(cudaMemcpyToSymbol(d_preScaller, &preScaller, sizeof(int)));
 
 		int dimension = 2;
@@ -587,7 +587,7 @@ namespace basinsGPU {
 				nPtsLimiter = (nPts * nPts) - (nPtsLimiter * i);
 
 
-			blockSize = ceil((1024.0f * 32.0f) / ((amountOfInitialConditions + amountOfValues) * sizeof(double)));
+			blockSize = ceil((1024.0f * 32.0f) / ((amountOfInitialConditions + amountOfValues) * sizeof(numb)));
 			if (blockSize < 1)
 			{
 #ifdef DEBUG
@@ -608,8 +608,8 @@ namespace basinsGPU {
 
 
 
-			double* d_semi_result;
-			gpuErrorCheck(cudaMalloc((void**)&d_semi_result, nPtsLimiter * (amountOfInitialConditions + amountOfValues) * sizeof(double)));
+			numb* d_semi_result;
+			gpuErrorCheck(cudaMalloc((void**)&d_semi_result, nPtsLimiter * (amountOfInitialConditions + amountOfValues) * sizeof(numb)));
 
 			calculateTransTimeCUDA << <gridSize, blockSize >> > (
 				d_ranges,
@@ -653,7 +653,7 @@ namespace basinsGPU {
 			gpuErrorCheck(cudaDeviceSynchronize());
 
 #ifdef DEBUG
-			printf("Progress: %f\%\n", (100.0f / (double)amountOfIteration) * (i + 1));
+			printf("Progress: %f\%\n", (100.0f / (numb)amountOfIteration) * (i + 1));
 #endif
 		}
 
@@ -661,13 +661,13 @@ namespace basinsGPU {
 		CUDA_dbscan(d_avgPeaks, d_avgIntervals, d_dbscanResult, d_helpfulArray, nPts * nPts, eps);
 
 
-		double* h_avgPeaks = new double[nPts * nPts];
-		double* h_avgIntervals = new double[nPts * nPts];
+		numb* h_avgPeaks = new numb[nPts * nPts];
+		numb* h_avgIntervals = new numb[nPts * nPts];
 		int* h_helpfulArray = new int[nPts * nPts];
 		int* h_dbscanResult = new int[nPts * nPts];
 
-		gpuErrorCheck(cudaMemcpy(h_avgPeaks, d_avgPeaks, nPts * nPts * sizeof(double), cudaMemcpyKind::cudaMemcpyDeviceToHost));
-		gpuErrorCheck(cudaMemcpy(h_avgIntervals, d_avgIntervals, nPts * nPts * sizeof(double), cudaMemcpyKind::cudaMemcpyDeviceToHost));
+		gpuErrorCheck(cudaMemcpy(h_avgPeaks, d_avgPeaks, nPts * nPts * sizeof(numb), cudaMemcpyKind::cudaMemcpyDeviceToHost));
+		gpuErrorCheck(cudaMemcpy(h_avgIntervals, d_avgIntervals, nPts * nPts * sizeof(numb), cudaMemcpyKind::cudaMemcpyDeviceToHost));
 		gpuErrorCheck(cudaMemcpy(h_helpfulArray, d_helpfulArray, nPts * nPts * sizeof(int), cudaMemcpyKind::cudaMemcpyDeviceToHost));
 		gpuErrorCheck(cudaMemcpy(h_dbscanResult, d_dbscanResult, nPts * nPts * sizeof(int), cudaMemcpyKind::cudaMemcpyDeviceToHost));
 
@@ -781,8 +781,8 @@ namespace basinsGPU {
 
 
 
-	__global__ void avgPeakFinderCUDA(double* data, const int sizeOfBlock, const int amountOfBlocks,
-		double* outAvgPeaks, double* AvgTimeOfPeaks, double* outPeaks, double* timeOfPeaks, int* systemCheker, double h)
+	__global__ void avgPeakFinderCUDA(numb* data, const int sizeOfBlock, const int amountOfBlocks,
+		numb* outAvgPeaks, numb* AvgTimeOfPeaks, numb* outPeaks, numb* timeOfPeaks, int* systemCheker, numb h)
 	{
 		// ---   ,     ---
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -829,7 +829,7 @@ namespace basinsGPU {
 		return;
 	}
 
-	__global__ void CUDA_dbscan_search_clear_points_kernel(double* data, double* intervals, int* helpfulArray, int* labels,
+	__global__ void CUDA_dbscan_search_clear_points_kernel(numb* data, numb* intervals, int* helpfulArray, int* labels,
 		const int amountOfData, int* res)
 	{
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;		//    
@@ -843,7 +843,7 @@ namespace basinsGPU {
 		}
 	}
 
-	__global__ void CUDA_dbscan_search_fixed_points_kernel(double* data, double* intervals, int* helpfulArray, int* labels,
+	__global__ void CUDA_dbscan_search_fixed_points_kernel(numb* data, numb* intervals, int* helpfulArray, int* labels,
 		const int amountOfData, int* res)
 	{
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;		//    
@@ -857,8 +857,8 @@ namespace basinsGPU {
 		}
 	}
 
-	__global__ void CUDA_dbscan_kernel(double* data, double* intervals, int* labels,
-		const int amountOfData, const double eps, int amountOfClusters,
+	__global__ void CUDA_dbscan_kernel(numb* data, numb* intervals, int* labels,
+		const int amountOfData, const numb eps, int amountOfClusters,
 		int* amountOfNeighbors, int* neighbors, int idxCurPoint, int* helpfulArray)
 	{
 		int idx = threadIdx.x + blockIdx.x * blockDim.x;		//    
