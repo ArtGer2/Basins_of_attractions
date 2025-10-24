@@ -24,7 +24,8 @@ namespace Basins {
         const numb* values,                           
         const int amountOfValues,                       
         const int preScaller,                          
-        const numb eps,                              
+        const numb eps,
+        const int block_size,              
         std::string OUT_FILE_PATH);                    
 
 }

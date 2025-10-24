@@ -32,6 +32,7 @@ void runBasinsPerformanceTests() {
 	numb init[3]{ 0, 0, 0, };
 	numb ranges[4]{ -6, 6, -6, 6 };
 	int indicesOfMutVars[2]{ 0, 1 };
+	const int custom_block_size = 32;
 
 	std::cout << "\n===== Test 1: Influence of resolution on execution time =====\n";
 
@@ -60,6 +61,7 @@ void runBasinsPerformanceTests() {
 					sizeof(params) / sizeof(numb),  // Number of parameters
 					1,                  // Multiplier
 					0.05,               // Epsilon for DBSCAN
+					custom_block_size,
 					std::string(BASINS_OUTPUT_PATH) + "/basins_res_test_" + std::to_string(resolution) + ".csv"
 				);
 
@@ -96,6 +98,7 @@ int main()
 	numb init[3]{ 0, 0, 0, };
 	numb ranges[4]{ -6, 6, -6, 6 };
 	int indicesOfMutVars[2]{ 0, 1 };
+	const int custom_block_size = 256;
 	//runBasinsPerformanceTests();
 	 {
 	  std::cout << "Start basins" << std::endl;
@@ -116,6 +119,7 @@ int main()
 	 	sizeof(params) / sizeof(numb),  // Number of parameters
 	 	1,          // Multiplier that reduces time and computation load (only every 'preScaller' point will be computed)
 	 	0.05,       // Epsilon for the DBSCAN algorithm
+		custom_block_size,
 	  	std::string(BASINS_OUTPUT_PATH) + "/bas.csv"
 	  );
 	  auto end = std::chrono::high_resolution_clock::now();

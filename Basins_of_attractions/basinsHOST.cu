@@ -18,7 +18,9 @@ namespace Basins {
         const int amountOfValues,
         const int preScaller,
         const numb eps,
-        std::string OUT_FILE_PATH)
+        const int block_size,
+        std::string OUT_FILE_PATH
+        )
     {
         // Delegate to the CUDA implementation
         basinsGPU::basinsOfAttraction_2(
@@ -36,6 +38,7 @@ namespace Basins {
             amountOfValues,
             preScaller,
             eps,
+            block_size,
             OUT_FILE_PATH
         );
     }

@@ -38,7 +38,7 @@ namespace basinsGPU {
 	__constant__ int d_amountOfCalculatedPoints;
 
 
-	void CUDA_dbscan(numb* data, numb* intervals, int* labels, int* helpfulArray, const int amountOfData, const numb eps)
+	void CUDA_dbscan(numb* data, numb* intervals, int* labels, int* helpfulArray, const int amountOfData, const numb eps, int block_size)
 	{
 		int resultClusters = 0;
 		int amountOfClusters = 0;               // Number of clusters
@@ -62,18 +62,21 @@ namespace basinsGPU {
 		int gridSize1;
 
 
-		cudaOccupancyMaxPotentialBlockSize(&minGridSize1, &blockSize1, CUDA_dbscan_kernel, 0, amountOfData);
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize1, &blockSize1, CUDA_dbscan_kernel, 0, amountOfData);
 
-		blockSize1 = blockSize1 > 512 ? 512 : blockSize1;
+		//blockSize1 = blockSize1 > 512 ? 512 : blockSize1;
+		blockSize1 = block_size;
 		gridSize1 = (amountOfData + blockSize1 - 1) / blockSize1;
 
 		int blockSize2;
 		int minGridSize2;
 		int gridSize2;
 
-		cudaOccupancyMaxPotentialBlockSize(&minGridSize2, &blockSize2, CUDA_dbscan_search_clear_points_kernel, 0, amountOfData);
+		//cudaOccupancyMaxPotentialBlockSize(&minGridSize2, &blockSize2, CUDA_dbscan_search_clear_points_kernel, 0, amountOfData);
 
-		blockSize2 = blockSize2 > 512 ? 512 : blockSize2;
+		//blockSize2 = blockSize2 > 512 ? 512 : blockSize2;
+		blockSize2 = block_size;
+
 		gridSize2 = (amountOfData + blockSize2 - 1) / blockSize2;
 
 
@@ -446,6 +449,7 @@ namespace basinsGPU {
 		const int     amountOfValues,                  // Number of parameters
 		const int     preScaller,                      // Multiplier that reduces time and computational load (only every 'preScaller' point will be calculated)
 		const numb  eps,                             // Epsilon for the DBSCAN algorithm
+		const int block_size,						// custom block size
 		std::string   OUT_FILE_PATH)                   // Output file path
 	{
 		int amountOfPointsInBlock = tMax / h / preScaller;
@@ -587,16 +591,7 @@ namespace basinsGPU {
 				nPtsLimiter = (nPts * nPts) - (nPtsLimiter * i);
 
 
-			blockSize = ceil((1024.0f * 32.0f) / ((amountOfInitialConditions + amountOfValues) * sizeof(numb)));
-			if (blockSize < 1)
-			{
-#ifdef DEBUG
-				printf("Error : BlockSize < 1; %d line\n", __LINE__);
-				exit(1);
-#endif
-			}
-
-			blockSize = 256;
+			blockSize = block_size;
 
 			gridSize = (nPtsLimiter + blockSize - 1) / blockSize;	
 
@@ -658,7 +653,7 @@ namespace basinsGPU {
 		}
 
 
-		CUDA_dbscan(d_avgPeaks, d_avgIntervals, d_dbscanResult, d_helpfulArray, nPts * nPts, eps);
+		CUDA_dbscan(d_avgPeaks, d_avgIntervals, d_dbscanResult, d_helpfulArray, nPts * nPts, eps, block_size);
 
 
 		numb* h_avgPeaks = new numb[nPts * nPts];
