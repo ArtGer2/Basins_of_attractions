@@ -19,7 +19,8 @@ namespace Basins {
         const int preScaller,
         const numb eps,
         const int block_size,
-        std::string OUT_FILE_PATH
+        std::string OUT_FILE_PATH,
+        int time[3]
         )
     {
         // Delegate to the CUDA implementation
@@ -39,7 +40,9 @@ namespace Basins {
             preScaller,
             eps,
             block_size,
-            OUT_FILE_PATH
+            OUT_FILE_PATH,
+            time
         );
     }
+
 }

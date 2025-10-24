@@ -24,7 +24,8 @@ namespace basinsGPU {
         const int		preScaller,							
         const numb	eps,
         const int block_size,
-        std::string		OUT_FILE_PATH);	                 
+        std::string		OUT_FILE_PATH,
+        int time[3]);
 
     __global__ void calculateDiscreteModelICCUDA(
         numb* ranges,

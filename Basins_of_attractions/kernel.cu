@@ -46,6 +46,7 @@ void runBasinsPerformanceTests() {
 			long long duration1 = 0;
 
 			try {
+				int time[3];
 				Basins::basinsOfAttraction_2(
 					500,                // System simulation time
 					resolution,         // Diagram resolution
@@ -62,7 +63,8 @@ void runBasinsPerformanceTests() {
 					1,                  // Multiplier
 					0.05,               // Epsilon for DBSCAN
 					custom_block_size,
-					std::string(BASINS_OUTPUT_PATH) + "/basins_res_test_" + std::to_string(resolution) + ".csv"
+					std::string(BASINS_OUTPUT_PATH) + "/basins_res_test_" + std::to_string(resolution) + ".csv",
+					time
 				);
 
 				auto end1 = std::chrono::high_resolution_clock::now();
@@ -103,10 +105,10 @@ int main()
 	 {
 	  std::cout << "Start basins" << std::endl;
 	  auto start = std::chrono::high_resolution_clock::now();
-
+	  int time[3];
 	  Basins::basinsOfAttraction_2(
-	  	300,       // CT
-	  	100,       // Resolution
+	  	700,       // CT
+	  	300,       // Resolution
 	  	h,         // time step
 	  	sizeof(init) / sizeof(numb),   // amount of init conditions
 	  	init,         // init conditions
@@ -120,11 +122,14 @@ int main()
 	 	1,          // Multiplier that reduces time and computation load (only every 'preScaller' point will be computed)
 	 	0.05,       // Epsilon for the DBSCAN algorithm
 		custom_block_size,
-	  	std::string(BASINS_OUTPUT_PATH) + "/bas.csv"
+	  	std::string(BASINS_OUTPUT_PATH) + "/bas.csv",
+		time
 	  );
 	  auto end = std::chrono::high_resolution_clock::now();
 	  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	  std::cout << "Time taken: " << duration << " milliseconds" << std::endl;
+	  std::cout << "Time taken: for system " << time[0] << " ms --- for dbscan " << time[1] << " ms --- at all " << time[2] << " ms" << std::endl;
+
 	  }
 
 	//runPerformanceTests();

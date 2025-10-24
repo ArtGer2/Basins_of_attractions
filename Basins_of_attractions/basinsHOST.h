@@ -10,7 +10,7 @@
 
 namespace Basins {
 
-    void basinsOfAttraction_2(
+   void basinsOfAttraction_2(
         const numb tMax,                              
         const int nPts,                                 
         const numb h,                                 
@@ -26,6 +26,7 @@ namespace Basins {
         const int preScaller,                          
         const numb eps,
         const int block_size,              
-        std::string OUT_FILE_PATH);                    
+        std::string OUT_FILE_PATH,
+        int time[3]);
 
 }

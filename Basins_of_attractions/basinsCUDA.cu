@@ -5,6 +5,8 @@
 #include "cudaMacros.cuh"
 #include "systems.cuh"
 #include <fstream>
+#include <chrono>
+
 #define DEBUG
 
 
@@ -450,8 +452,13 @@ namespace basinsGPU {
 		const int     preScaller,                      // Multiplier that reduces time and computational load (only every 'preScaller' point will be calculated)
 		const numb  eps,                             // Epsilon for the DBSCAN algorithm
 		const int block_size,						// custom block size
-		std::string   OUT_FILE_PATH)                   // Output file path
+		std::string   OUT_FILE_PATH,
+		int time[3])                   // Output file path
 	{
+		time[0] = 0;
+		time[1] = 0;
+		time[2] = 0;
+
 		int amountOfPointsInBlock = tMax / h / preScaller;
 
 		int amountOfPointsForSkip = transientTime / h;
@@ -586,6 +593,7 @@ namespace basinsGPU {
 
 		for (int i = 0; i < amountOfIteration; ++i)
 		{
+			auto start = std::chrono::high_resolution_clock::now();
 
 			if (i == amountOfIteration - 1)
 				nPtsLimiter = (nPts * nPts) - (nPtsLimiter * i);
@@ -629,6 +637,8 @@ namespace basinsGPU {
 			gpuErrorCheck(cudaDeviceSynchronize());
 			gpuErrorCheck(cudaFree(d_semi_result));
 
+
+
 			cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, avgPeakFinderCUDA, 0, nPtsLimiter);
 			gridSize = (nPtsLimiter + blockSize - 1) / blockSize;
 
@@ -647,14 +657,18 @@ namespace basinsGPU {
 
 			gpuErrorCheck(cudaDeviceSynchronize());
 
+
+			auto end = std::chrono::high_resolution_clock::now();
+			time[0] += std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 #ifdef DEBUG
 			printf("Progress: %f\%\n", (100.0f / (numb)amountOfIteration) * (i + 1));
 #endif
 		}
-
+		auto start2 = std::chrono::high_resolution_clock::now();
 
 		CUDA_dbscan(d_avgPeaks, d_avgIntervals, d_dbscanResult, d_helpfulArray, nPts * nPts, eps, block_size);
-
+		auto end2 = std::chrono::high_resolution_clock::now();
+		time[1] += std::chrono::duration_cast<std::chrono::milliseconds>(end2 - start2).count();
 
 		numb* h_avgPeaks = new numb[nPts * nPts];
 		numb* h_avgIntervals = new numb[nPts * nPts];
@@ -770,7 +784,10 @@ namespace basinsGPU {
 		delete[] h_avgIntervals;
 		delete[] h_helpfulArray;
 		cudaDeviceReset();
+
+
 		// ---------------------------
+		time[2] = time[0]+time[1];
 	}
 
 
