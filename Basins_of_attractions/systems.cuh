@@ -6,7 +6,7 @@
 #include "device_launch_parameters.h"
 #include <math.h>
 
-typedef float numb;
+typedef double numb;
 
 
 #define USE_SYSTEM_FOR_BASINS
@@ -56,8 +56,8 @@ __device__ inline void calcDiscreteModel(numb* x, const numb* a, numb h) {
 
 #ifdef USE_SYSTEM_FOR_BASINS
 __device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
-    float h1 = h * a[0];
-    float h2 = h * (1 - a[0]);
+    numb h1 = h * a[0];
+    numb h2 = h * (1 - a[0]);
 
     X[0] = X[0] + h * (sin(X[1]) - a[1] * X[0]);
     X[1] = X[1] + h * (sin(X[2]) - a[1] * X[1]);
@@ -74,13 +74,13 @@ __device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
 
 #ifdef USE_SYSTEM_FOR_BASINS_2
 __device__ inline void calcDiscreteModel(numb* X, const numb* a, numb h) {
-    float h1 = h * a[0];
-    float h2 = h * (1 - a[0]);
+    numb h1 = h * a[0];
+    numb h2 = h * (1 - a[0]);
 
     X[0] = X[0] + h1 * (-X[1]);
     X[1] = X[1] + h1 * (a[1] * X[0] + sin(X[1]));
 
-    float z = X[1];
+    numb z = X[1];
 
     X[1] = z + h2 * (a[1] * X[0] + sin(X[1]));
     X[0] = X[0] + h2 * (-X[1]);

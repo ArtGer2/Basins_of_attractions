@@ -639,7 +639,8 @@ namespace basinsGPU {
 
 
 
-			cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, avgPeakFinderCUDA, 0, nPtsLimiter);
+			//cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize, avgPeakFinderCUDA, 0, nPtsLimiter);
+			blockSize = block_size;
 			gridSize = (nPtsLimiter + blockSize - 1) / blockSize;
 
 
