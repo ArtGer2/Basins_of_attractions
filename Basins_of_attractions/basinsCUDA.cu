@@ -338,7 +338,7 @@ namespace basinsGPU {
 		const int startDataIndex,
 		const int writeStep)
 	{
-		numb* xPrev = new numb[amountOfX];
+		numb xPrev[SIZE_X];
 
 		for (int i = 0; i < amountOfIterations; ++i)
 		{
@@ -381,11 +381,9 @@ namespace basinsGPU {
 
 		if (sqrt(abs(tempResult)) < 1e-9)
 		{
-			delete[] xPrev;
 			return -1;
 		}
 
-		delete[] xPrev;
 		return 1;
 	}
 
@@ -624,7 +622,7 @@ namespace basinsGPU {
 			gpuGlobalErrorCheck();
 			gpuErrorCheck(cudaDeviceSynchronize());
 
-			calculateDiscreteModelCUDA << <gridSize, blockSize >> > (
+			calculateDiscreteModelCUDA << <gridSize, blockSize >> > (  
 				d_ranges,
 				d_indicesOfMutVars,
 				d_initialConditions,
